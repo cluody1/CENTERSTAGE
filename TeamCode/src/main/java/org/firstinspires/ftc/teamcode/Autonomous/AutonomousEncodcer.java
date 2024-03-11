@@ -12,6 +12,8 @@ public class AutonomousEncodcer extends LinearOpMode{
     @Override
     public void runOpMode() throws InterruptedException{
 
+        
+
         robot.right.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         robot.back_right.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         robot.left.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
