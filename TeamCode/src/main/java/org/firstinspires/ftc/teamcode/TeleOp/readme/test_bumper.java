@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@TeleOp(name="StarterBot", group="Iterative Opmode")
+@TeleOp(name="test_bumber", group="Iterative Opmode")
 
 public class test_bumper extends OpMode
 {

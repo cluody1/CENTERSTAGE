@@ -1,4 +1,5 @@
-package org.firstinspires.ftc.teamcode.TeleOp.readme;
+// تعريف المكتبات اللازمة
+package org.firstinspires.ftc.teamcode.transolate;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -6,47 +7,59 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@TeleOp(name="Starter_Bot", group="Iterative Opmode")
+// تحديد أن هذا الكود لوضع التحكم التليفزيوني
+@TeleOp(name="Starter Bot 2024", group="Iterative Opmode")
 
-public class StarterBot2024_Teleop34 extends OpMode
+// بداية تعريف الفصل الرئيسي
+public class transolate extends OpMode
 {
-    // Declare OpMode members.
-    private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor right = null;
-    private DcMotor back_right = null;
-    private DcMotor left = null;
-    private DcMotor back_left = null;
-    private DcMotor armLeft = null;
-    private DcMotor armRight = null;
-    private Servo gripper = null;
-    private Servo wrist = null;
+    // تعريف المتغيرات اللازمة
 
+    // متغير لتتبع الوقت المنقضي منذ بدء تشغيل الروبوت
+    private ElapsedTime runtime = new ElapsedTime();
+
+    // متغيرات لتخزين مراجع المحركات والخدمات
+    private DcMotor right = null; // محرك الجانب الأيمن الخلفي
+    private DcMotor back_right = null; // محرك الجانب الأيمن الأمامي
+    private DcMotor left = null; // محرك الجانب الأيسر الخلفي
+    private DcMotor back_left = null; // محرك الجانب الأيسر الأمامي
+    private DcMotor armLeft = null; // محرك الذراع الأيسر
+    private DcMotor armRight = null; // محرك الذراع الأيمن
+    private Servo gripper = null; // المحرك الخدمي لفتحة الإمساك
+    private Servo wrist = null; // المحرك الخدمي للمعصم
+
+    // متغير يحدد ما إذا كانت الذراع تعمل بالوضع اليدوي أو التلقائي
     private boolean manualMode = false;
+
+    // قيمة الهدف لموضع الذراع
     private double armSetpoint = 0.0;
 
+    // نطاق التحكم اليدوي للذراع
     private final double armManualDeadband = 0.03;
 
-    private final double gripperClosedPosition = 1.0;
-    private final double gripperOpenPosition = 0.5;
-    private final double wristUpPosition = 1.0;
-    private final double wristDownPosition = 0.0;
+    // وضعيات الفتحة والمعصم
+    private final double gripperClosedPosition = 0.5; // موقف الفتحة عند الإغلاق
+    private final double gripperOpenPosition = 0.5; // موقف الفتحة عند الفتح
+    private final double wristUpPosition = 0.5; // موقف المعصم عند الرفع
+    private final double wristDownPosition = 0.0; // موقف المعصم عند الخفض
 
-    private final int armHomePosition = 0;
-    private final int armIntakePosition = 10;
-    private final int armScorePosition = 600;
-    private final int armShutdownThreshold = 5;
+    // مواقع محركات الذراع المحددة مسبقًا
+    private final int armHomePosition = 0; // الوضع الافتراضي للذراع
+    private final int armIntakePosition = 10; // موضع الذراع لالتقاط الكرة
+    private final int armScorePosition = 600; // موضع الذراع لإطلاق الكرة
+    private final int armShutdownThreshold = 5; // الحد الأدنى لإيقاف تشغيل المحرك
 
-    float pivot;
-    float vertical;
-    float horizontal;
+    // قيم للتحكم في الحركة
+    float pivot; // قيمة الدوران
+    float vertical; // القيمة الرأسية للحركة
+    float horizontal; // القيمة الأفقية للحركة
 
-    /*
-     * Code to run ONCE when the driver hits INIT
-     */
+    // كود يتم تنفيذه مرة واحدة عندما يتم تشغيل الروبوت
     @Override
     public void init() {
         telemetry.addData("Status", "Initialized");
 
+        // تعريف وتهيئة المحركات والخدمات
         right = hardwareMap.get(DcMotor.class, "right");
         back_right = hardwareMap.get(DcMotor.class, "back_right");
         left = hardwareMap.get(DcMotor.class, "left");
@@ -56,64 +69,63 @@ public class StarterBot2024_Teleop34 extends OpMode
         gripper = hardwareMap.get(Servo.class, "gripper");
         wrist = hardwareMap.get(Servo.class, "wrist");
 
-        right.setDirection(DcMotor.Direction.REVERSE);
-        back_right.setDirection(DcMotor.Direction.REVERSE);
-
-
+        // تعيين اتجاهات الحركة للمحركات (تم تغيير العلامات)
+        right.setDirection(DcMotor.Direction.FORWARD);
+        back_right.setDirection(DcMotor.Direction.FORWARD);
+        left.setDirection(DcMotor.Direction.REVERSE);
+        back_left.setDirection(DcMotor.Direction.REVERSE);
         armLeft.setDirection(DcMotor.Direction.FORWARD);
         armRight.setDirection(DcMotor.Direction.REVERSE);
-        armLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        armRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        armLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        armRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        armLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        armRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        armLeft.setPower(0.0);
-        armRight.setPower(0.0);
 
-        telemetry.addData("Status", "Initialized");
-    }
-
-    /*
-     * Code to run REPEATEDLY after the driver hits INIT, but before they hit PLAY
-     */
-    @Override
-    public void init_loop() {
-    }
-
-    /*
-     * Code to run ONCE when the driver hits PLAY
-     */
-    @Override
-    public void start() {
-        runtime.reset();
-
+        // إعادة ضبط مواقع الذراع وتهيئتها
         armLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armLeft.setTargetPosition(armHomePosition);
         armRight.setTargetPosition(armHomePosition);
-        armLeft.setPower(1.0);
-        armRight.setPower(1.0);
+        armLeft.setPower(0.5);
+        armRight.setPower(0.5);
+        armLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        armRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        telemetry.addData("Status", "Initialized");
+    }
+
+    // كود يتم تنفيذه مرة واحدة عندما يتم الضغط على زر التشغيل
+    @Override
+    public void start() {
+        runtime.reset();
+
+        // إعادة ضبط مواقع الذراع وتهيئتها للوضع الافتراضي
+        armLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armLeft.setTargetPosition(armHomePosition);
+        armRight.setTargetPosition(armHomePosition);
+        armLeft.setPower(0.5);
+        armRight.setPower(0.5);
         armLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         armRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
-    /*
-     * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
-     */
+    // كود يتم تنفيذه بشكل متكرر أثناء تشغيل الروبوت
     @Override
     public void loop() {
+
+        double leftPower;
+        double rightPower;
         double manualArmPower;
 
-        //DRIVE
-        vertical = gamepad1.left_stick_y;
+        // التحكم في حركة الروبوت
+        vertical = -gamepad1.left_stick_y;
         horizontal = gamepad1.left_stick_x;
         pivot = gamepad1.right_stick_x;
-        right.setPower(-pivot + (vertical - horizontal));
-        back_right.setPower(-pivot + vertical + horizontal);
-        left.setPower(pivot + vertical + horizontal);
-        back_left.setPower(pivot + (vertical - horizontal));
-        telemetry.update();
+        // تحكم الحركة الأمامية والخلفية باستخدام الذراع الأيسر (right_stick_y)
+        right.setPower(pivot + (vertical - horizontal));
+        back_right.setPower(pivot + (vertical + horizontal));
+        left.setPower(-pivot + (vertical + horizontal));
+        back_left.setPower(-pivot + (vertical - horizontal));
+        // تحكم الدوران والانعطاف باستخدام الذراع الأيمن (left_stick_x)
+        armLeft.setPower(-horizontal);
+        armRight.setPower(horizontal);
 
         //ARM & WRIST
         manualArmPower = gamepad1.right_trigger - gamepad1.left_trigger;
@@ -132,8 +144,8 @@ public class StarterBot2024_Teleop34 extends OpMode
             if (manualMode) {
                 armLeft.setTargetPosition(armLeft.getCurrentPosition());
                 armRight.setTargetPosition(armRight.getCurrentPosition());
-                armLeft.setPower(1.0);
-                armRight.setPower(1.0);
+                armLeft.setPower(0.5);
+                armRight.setPower(0.5);
                 armLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 armRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 manualMode = false;
@@ -143,8 +155,8 @@ public class StarterBot2024_Teleop34 extends OpMode
             if (gamepad1.a) {
                 armLeft.setTargetPosition(armHomePosition);
                 armRight.setTargetPosition(armHomePosition);
-                armLeft.setPower(1.0);
-                armRight.setPower(1.0);
+                armLeft.setPower(0.5);
+                armRight.setPower(0.5);
                 armLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 armRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 wrist.setPosition(wristUpPosition);
@@ -152,8 +164,8 @@ public class StarterBot2024_Teleop34 extends OpMode
             else if (gamepad1.b) {
                 armLeft.setTargetPosition(armIntakePosition);
                 armRight.setTargetPosition(armIntakePosition);
-                armLeft.setPower(1.0);
-                armRight.setPower(1.0);
+                armLeft.setPower(0.5);
+                armRight.setPower(0.5);
                 armLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 armRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 wrist.setPosition(wristDownPosition);
@@ -161,8 +173,8 @@ public class StarterBot2024_Teleop34 extends OpMode
             else if (gamepad1.y) {
                 armLeft.setTargetPosition(armScorePosition);
                 armRight.setTargetPosition(armScorePosition);
-                armLeft.setPower(1.0);
-                armRight.setPower(1.0);
+                armLeft.setPower(0.5);
+                armRight.setPower(0.5);
                 armLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 armRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 wrist.setPosition(wristUpPosition);
@@ -212,12 +224,4 @@ public class StarterBot2024_Teleop34 extends OpMode
                         ", right = " +
                         ((Integer)armRight.getTargetPosition()).toString());
     }
-
-    /*
-     * Code to run ONCE after the driver hits STOP
-     */
-    @Override
-    public void stop() {
-    }
-
-} 
+}

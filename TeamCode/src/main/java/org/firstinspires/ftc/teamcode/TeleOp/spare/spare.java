@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.TeleOp.test;
+package org.firstinspires.ftc.teamcode.TeleOp.spare;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -6,9 +6,9 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@TeleOp(name="Starter_Bot_2024", group="Iterative Opmode")
+@TeleOp(name="spare", group="Iterative Opmode")
 
-public class testprogram extends OpMode
+public class spare extends OpMode
 {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -18,10 +18,8 @@ public class testprogram extends OpMode
     private DcMotor back_left = null;
     private DcMotor armLeft = null;
     private DcMotor armRight = null;
-    private DcMotor Middel = null;
     private Servo gripper = null;
     private Servo wrist = null;
-    private Servo plane = null;
 
     private boolean manualMode = false;
     private double armSetpoint = 0.0;
@@ -34,8 +32,8 @@ public class testprogram extends OpMode
     private final double wristDownPosition = 0.0;
 
     private final int armHomePosition = 0;
-    private final int armIntakePosition = 10;
-    private final int armScorePosition = 600;
+    private final int armIntakePosition = 5;
+    private final int armScorePosition = 300;
     private final int armShutdownThreshold = 5;
 
     float pivot;
@@ -55,15 +53,11 @@ public class testprogram extends OpMode
         back_left = hardwareMap.get(DcMotor.class, "back_left");
         armLeft  = hardwareMap.get(DcMotor.class, "armLeft");
         armRight = hardwareMap.get(DcMotor.class, "armRight");
-        Middel  = hardwareMap.get(DcMotor.class, "Middel");
         gripper = hardwareMap.get(Servo.class, "gripper");
         wrist = hardwareMap.get(Servo.class, "wrist");
-        plane = hardwareMap.get(Servo.class, "plane");
-
 
         right.setDirection(DcMotor.Direction.REVERSE);
         back_right.setDirection(DcMotor.Direction.REVERSE);
-
 
         armLeft.setDirection(DcMotor.Direction.FORWARD);
         armRight.setDirection(DcMotor.Direction.REVERSE);
@@ -97,8 +91,8 @@ public class testprogram extends OpMode
         armRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armLeft.setTargetPosition(armHomePosition);
         armRight.setTargetPosition(armHomePosition);
-        armLeft.setPower(0.7);
-        armRight.setPower(0.7);
+        armLeft.setPower(0.5);
+        armRight.setPower(0.5);
         armLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         armRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
@@ -108,10 +102,11 @@ public class testprogram extends OpMode
      */
     @Override
     public void loop() {
+
         double manualArmPower;
 
         //DRIVE
-        vertical = gamepad1.left_stick_y;
+        vertical = -gamepad1.left_stick_y;
         horizontal = gamepad1.left_stick_x;
         pivot = gamepad1.right_stick_x;
         right.setPower(-pivot + (vertical - horizontal));
@@ -119,27 +114,6 @@ public class testprogram extends OpMode
         left.setPower(pivot + vertical + horizontal);
         back_left.setPower(pivot + (vertical - horizontal));
         telemetry.update();
-
-        if (gamepad1.dpad_up){
-            plane.setPosition(1);
-        }
-        else {
-            plane.setPosition(0);
-        }
-
-        if (gamepad1.dpad_left){
-            Middel.setPower(1);
-        }
-        else {
-            Middel.setPower(0);
-        }
-
-        if (gamepad1.dpad_right){
-            Middel.setPower(1);
-        }
-        else {
-            Middel.setPower(0);
-        }
 
         //ARM & WRIST
         manualArmPower = gamepad1.right_trigger - gamepad1.left_trigger;
@@ -158,8 +132,8 @@ public class testprogram extends OpMode
             if (manualMode) {
                 armLeft.setTargetPosition(armLeft.getCurrentPosition());
                 armRight.setTargetPosition(armRight.getCurrentPosition());
-                armLeft.setPower(0.7);
-                armRight.setPower(0.7);
+                armLeft.setPower(0.5);
+                armRight.setPower(0.5);
                 armLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 armRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 manualMode = false;
@@ -169,8 +143,8 @@ public class testprogram extends OpMode
             if (gamepad1.a) {
                 armLeft.setTargetPosition(armHomePosition);
                 armRight.setTargetPosition(armHomePosition);
-                armLeft.setPower(0.4);
-                armRight.setPower(0.4);
+                armLeft.setPower(0.5);
+                armRight.setPower(0.5);
                 armLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 armRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 wrist.setPosition(wristUpPosition);
@@ -178,8 +152,8 @@ public class testprogram extends OpMode
             else if (gamepad1.b) {
                 armLeft.setTargetPosition(armIntakePosition);
                 armRight.setTargetPosition(armIntakePosition);
-                armLeft.setPower(0.7);
-                armRight.setPower(0.7);
+                armLeft.setPower(0.5);
+                armRight.setPower(0.5);
                 armLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 armRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 wrist.setPosition(wristDownPosition);
@@ -196,7 +170,7 @@ public class testprogram extends OpMode
         }
 
         //Re-zero encoder button
-        if (gamepad1.x) {
+        if (gamepad1.start) {
             armLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             armRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             armLeft.setPower(0.0);
@@ -217,17 +191,16 @@ public class testprogram extends OpMode
         }
 
         //GRIPPER
-        if (gamepad1.left_bumper) {
+        if (gamepad1.left_bumper || gamepad1.right_bumper) {
             gripper.setPosition(gripperOpenPosition);
         }
-        if (gamepad1.right_bumper) {
+        else {
             gripper.setPosition(gripperClosedPosition);
         }
 
         telemetry.addData("Status", "Run Time: " + runtime.toString());
         telemetry.addData("Manual Power", manualArmPower);
         telemetry.addData("Arm Pos:",
-
                 "left = " +
                         ((Integer)armLeft.getCurrentPosition()).toString() +
                         ", right = " +
